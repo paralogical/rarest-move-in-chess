@@ -1,0 +1,15 @@
+.DS_Store
+.vscode
+zig-out
+zig-cache
+compressed
+partialResults_old
+interestingGames_old
+pgns
+result.txt
+bzip2-1.0.8
+zig-macos-x86_64-0.10.0-dev.665+f0400ad93
+zig
+bzip2-latest.tar.gz
+video
+*.prof
