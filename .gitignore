@@ -13,3 +13,4 @@ zig
 bzip2-latest.tar.gz
 video
 *.prof
+node_modules
