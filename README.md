@@ -4,6 +4,8 @@ That is, the rarest move notation (standard algebraic notation) given a large nu
 
 However, since there are many moves that never happen, this is moreso counting and categorizing moves of various types rather than finding one specific rare move.
 
+[See the video about this data here](https://youtu.be/iDnW0WiCqNc)
+
 ## Running
 
 This was written using zig 0.12.0.
@@ -62,10 +64,11 @@ Hence data before July 2014 is excluded. It's a measely 8,247,741 games, or 0.1%
 
 I also looked at a few more smaller datasets but they're so few games I excluded them from the analysis.
 
-4 categories of rare moves are:
+Some categories of rare moves are:
 
 - Doubly Disambiguated Queen capture checkmates, like Qc3xd4#
 - Rank-Disambiguated Bishop capture checkmates, like B3xd4#
+- Doubly Disambiguated Knight _Non-Capture_ Checkmates like Na1b3# (So far exactly 1 example of this)
 - Doubly Disambiguated Knight Capture Checkmates like Na1xb3# (I've never seen an example of this)
 - Doubly Disambiguated Bishop Capture Checkmates like Bb3xc4# (I've never seen an example of this)
 
