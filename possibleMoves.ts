@@ -1,7 +1,10 @@
-// This script generates all possible moves in chess, focusing on categories of moves.
+// This script enumerates all possible moves in chess, focusing on categories of moves.
 // Some moves are surprisingly not possible,
 // such as certain double disambiguations that cannot be check or mate,
 // or certain rank/double disambiguations that would be more properly written with a simpler disambiguation.
+// Note: this is meant to be an explanation of the reasoning for the moves that are not possible,
+// this file does not do any sort of simulation to validate the reasoning.
+// See possible.py for some basic validation of these ideas.
 
 let currentSection = "";
 let currentSubsection = "";
@@ -711,22 +714,43 @@ function gray(s: string) {
   return `\x1b[90m${s}\x1b[0m`;
 }
 
+function totalSection(sectionName: string): number {
+  const total = Object.values(sectionMoves[sectionName]).reduce(
+    (acc, v) => acc + v.length,
+    0
+  );
+  return total;
+}
+
 const context = 8;
 
 const shortOutput = process.argv.includes("--short");
 const plain = process.argv.includes("--plain");
+const json = process.argv.includes("--json");
 if (plain) {
   for (const [_, sectionValue] of Object.entries(sectionMoves)) {
     for (const [_, subsectionValue] of Object.entries(sectionValue)) {
       process.stdout.write(subsectionValue.join("\n") + "\n");
     }
   }
+} else if (json) {
+  const values = {
+    castles: totalSection("Castles"),
+    pawn: totalSection("Pawn"),
+    knight: totalSection("Knight"),
+    queen: totalSection("Queen"),
+    king: totalSection("King"),
+    rook: totalSection("Rook"),
+    bishop: totalSection("Bishop"),
+    total: 0,
+  };
+
+  values.total = Object.values(values).reduce((acc, v) => acc + v, 0);
+
+  process.stdout.write(JSON.stringify(values, null, 2));
 } else {
   for (const [sectionName, sectionValue] of Object.entries(sectionMoves)) {
-    const total = Object.values(sectionValue).reduce(
-      (acc, v) => acc + v.length,
-      0
-    );
+    const total = totalSection(sectionName);
     println(red(`# ${sectionName}  (${total})`));
     for (const [subsectionName, subsectionValue] of Object.entries(
       sectionValue

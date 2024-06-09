@@ -1,0 +1,10 @@
+{
+  "castles": 6,
+  "pawn": 924,
+  "knight": 4032,
+  "queen": 13776,
+  "king": 384,
+  "rook": 5472,
+  "bishop": 5160,
+  "total": 29754
+}
