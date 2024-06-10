@@ -96,6 +96,7 @@ Reading data from lichess_db_standard_rated_2018-07.result.json
   > Games:     21,027,590  Moves:  1,411,274,965      Bytes: 44.8GB, BytesFromGames: 37.0GB      unique moves: 15,152, interesting games: 0
 
 wrote combined result data to results.json
+wrote simplified result data to simplified_results.json
 
 Total Moves:     342,490,585,837
 Unique Moves:             21,373
@@ -103,26 +104,15 @@ Total Games:       5,163,425,477
 Data processed (uncompressed): 11.3TB
 Data processed (uncompressed, excluding annotations): 9.4TB
 
-Possible legal moves: (x3 to include check and checkmate)
-Pawn:       308 (   924)
-Rook:     1,824 ( 5,472)
-Knight:   1,248 ( 3,744)
-Bishop:   1,720 ( 5,064)
-Queen:    5,088 (14,928)
-King:       128 (   384)
 
-There are 10,318 possible moves without including check or checkmate
-There are 30,518 possible moves including check or checkmate
+Total moves:    342,490,585,837           -  21,373 unique (71.83% coverage)
 
-
-342,490,585,837 moves analyzed
-
-♟ Pawn moves:   95,553,301,110 (27.90%)  -     924 unique (100.00% coverage)
-♚ King moves:   37,122,221,520 (10.84%)  -     382 unique (99.48% coverage)
-♜ Rook moves:   48,055,626,263 (14.03%)  -   5,295 unique (96.77% coverage)
-♞ Knight moves: 59,629,230,254 (17.41%)  -   2,909 unique (77.70% coverage)
-♛ Queen moves:  42,061,708,229 (12.28%)  -   9,216 unique (61.74% coverage)
-♝ Bishop moves: 52,179,069,156 (15.24%)  -   2,641 unique (52.15% coverage)
+♟ Pawn moves:    95,553,301,110 (27.90%)  -     924 unique (100.00% coverage)
+♚ King moves:    37,122,221,520 (10.84%)  -     382 unique (99.48% coverage)
+♜ Rook moves:    48,055,626,263 (14.03%)  -   5,295 unique (96.77% coverage)
+♞ Knight moves:  59,629,230,254 (17.41%)  -   2,909 unique (72.15% coverage)
+♛ Queen moves:   42,061,708,229 (12.28%)  -   9,216 unique (66.90% coverage)
+♝ Bishop moves:  52,179,069,156 (15.24%)  -   2,641 unique (51.18% coverage)
 
          23.87% of all moves are captures
           7.13% of all moves are checks
