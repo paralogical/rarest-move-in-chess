@@ -10,6 +10,8 @@ const fmtComma = util.fmtComma;
 
 const Parse = @import("./parse.zig");
 const json = @import("./json.zig");
+const simplifyMove = @import("./simplify.zig").simplifyMove;
+const isDisambiguation = @import("./disambiguation.zig").isDisambiguation;
 const ResultJson = json.ResultJson;
 const ResultData = Parse.ResultData;
 const InterestingGame = Parse.InterestingGame;
@@ -139,6 +141,9 @@ pub fn analyze(continingDir: []const u8) !void {
         .arena = &arena,
         .arenaAllocator = arena.allocator(),
     };
+    var simplifiedArena = std.heap.ArenaAllocator.init(allocator);
+    defer simplifiedArena.deinit();
+    var simplifiedMoves = std.StringArrayHashMap(u64).init(allocator);
 
     // ----------- Read each file and add data to accumulated result -----------
     var movesAdded: u64 = 0;
@@ -182,11 +187,27 @@ pub fn analyze(continingDir: []const u8) !void {
             while (it.next()) |entry| {
                 const val: u64 = @intCast(entry.value_ptr.*.integer);
                 movesAdded += val;
-                const existing = moves.getPtr(entry.key_ptr.*);
-                if (existing) |existingVal| {
-                    existingVal.* += val;
-                } else {
-                    try moves.put(try allocator.dupe(u8, entry.key_ptr.*), val);
+                // add actual notation to moves list
+                {
+                    const existing = moves.getPtr(entry.key_ptr.*);
+                    if (existing) |existingVal| {
+                        existingVal.* += val;
+                    } else {
+                        try moves.put(try allocator.dupe(u8, entry.key_ptr.*), val);
+                    }
+                }
+
+                // Add simplified notation to separate list.
+                // This strips out disambiguations and check/checkmate symbols,
+                // to get a notion of a rarest move ignoring purely notational differences.
+                {
+                    const simple = try simplifyMove(simplifiedArena.allocator(), entry.key_ptr.*);
+                    const existing = simplifiedMoves.getPtr(simple);
+                    if (existing) |existingVal| {
+                        existingVal.* += val;
+                    } else {
+                        try simplifiedMoves.put(try allocator.dupe(u8, simple), val);
+                    }
                 }
             }
         }
@@ -201,6 +222,16 @@ pub fn analyze(continingDir: []const u8) !void {
         const collectedResultsName = "results.json";
         try json.writeResultJson(allocator, &accumulated, collectedResultsName);
         std.debug.print("wrote combined result data to {s}\n", .{collectedResultsName});
+    }
+
+    // ----------- Write out simplified_results.json -----------
+
+    {
+        util.sortMovesByFrequency(&simplifiedMoves);
+
+        const simplifiedResultsName = "simplified_results.json";
+        try json.writeSimplifiedMoves(allocator, simplifiedMoves, simplifiedResultsName);
+        std.debug.print("wrote simplified result data to {s}\n", .{simplifiedResultsName});
     }
 
     // ----------- Start analyzing results -----------
@@ -356,75 +387,6 @@ pub fn analyze(continingDir: []const u8) !void {
 
 fn percent(found: u64, total: u64) f64 {
     return 100.0 * @as(f64, @floatFromInt(found)) / @as(f64, @floatFromInt(total));
-}
-
-pub const Disambiguation = struct {
-    piece: u8,
-    from: []const u8,
-    to: []const u8,
-    isFile: bool,
-    isRank: bool,
-    isRankFile: bool,
-    isCapture: bool,
-};
-
-pub fn isDisambiguation(move: []const u8) ?Disambiguation {
-    // strip leading piece, 'x' for takes, trailing promotion/check/mate/capture
-    // ab1
-    // 1b1
-    // axb1
-    // 1xb1
-    // a1xb1
-    const piece = move[0];
-    if (std.mem.indexOfScalar(u8, "QNBR", piece) == null) {
-        return null;
-    }
-    const middle = std.mem.trim(u8, move, "=QKNRB+#");
-    const to = middle[middle.len - 2 ..];
-    var from = middle[0 .. middle.len - to.len];
-    var isCapture = false;
-    if (from.len > 0 and from[from.len - 1] == 'x') {
-        isCapture = true;
-        from.len -= 1;
-    }
-    if (from.len == 0) {
-        return null;
-    }
-
-    var isRankFile = false;
-    var isRank = false;
-    var isFile = false;
-    if (from.len == 2) {
-        isRankFile = true;
-    } else if (from[0] >= '0' and from[0] <= '9') {
-        isRank = true;
-    } else {
-        isFile = true;
-    }
-
-    return Disambiguation{
-        .piece = piece,
-        .from = from,
-        .to = to,
-        .isFile = isFile,
-        .isRank = isRank,
-        .isRankFile = isRankFile,
-        .isCapture = isCapture,
-    };
-}
-
-test "disambiguation" {
-    try std.testing.expectFmt("analyze.Disambiguation{ .piece = 81, .from = { 97 }, .to = { 98, 49 }, .isFile = true, .isRank = false, .isRankFile = false, .isCapture = false }", "{?}", .{isDisambiguation("Qab1")});
-    try std.testing.expectFmt("analyze.Disambiguation{ .piece = 81, .from = { 97, 50 }, .to = { 98, 49 }, .isFile = false, .isRank = false, .isRankFile = true, .isCapture = false }", "{?}", .{isDisambiguation("Qa2b1")});
-    try std.testing.expectFmt("analyze.Disambiguation{ .piece = 81, .from = { 97 }, .to = { 98, 49 }, .isFile = true, .isRank = false, .isRankFile = false, .isCapture = false }", "{?}", .{isDisambiguation("Qab1")});
-    try std.testing.expectFmt("analyze.Disambiguation{ .piece = 81, .from = { 97 }, .to = { 98, 49 }, .isFile = true, .isRank = false, .isRankFile = false, .isCapture = true }", "{?}", .{isDisambiguation("Qaxb1")});
-    try std.testing.expectFmt("analyze.Disambiguation{ .piece = 81, .from = { 97, 49 }, .to = { 98, 49 }, .isFile = false, .isRank = false, .isRankFile = true, .isCapture = true }", "{?}", .{isDisambiguation("Qa1xb1")});
-    try std.testing.expectFmt("analyze.Disambiguation{ .piece = 66, .from = { 97, 49 }, .to = { 98, 49 }, .isFile = false, .isRank = false, .isRankFile = true, .isCapture = true }", "{?}", .{isDisambiguation("Ba1xb1+")});
-    try std.testing.expectFmt("analyze.Disambiguation{ .piece = 78, .from = { 49 }, .to = { 98, 49 }, .isFile = false, .isRank = true, .isRankFile = false, .isCapture = false }", "{?}", .{isDisambiguation("N1b1")});
-    try std.testing.expectFmt("analyze.Disambiguation{ .piece = 78, .from = { 49 }, .to = { 98, 49 }, .isFile = false, .isRank = true, .isRankFile = false, .isCapture = false }", "{?}", .{isDisambiguation("N1b1#")});
-    try std.testing.expect(isDisambiguation("b1") == null);
-    try std.testing.expect(isDisambiguation("axb1") == null);
-    try std.testing.expect(isDisambiguation("Qb1") == null);
 }
 
 const Pair = struct {

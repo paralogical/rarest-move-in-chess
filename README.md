@@ -74,6 +74,12 @@ Some categories of rare moves are:
 
 Each of these has less-rare variants like non-capture mates, capture with check, etc.
 
+Much of the rarity and interesting cases come from disambiguations inherent to standard algebraic notation,
+but you could argue this is purely a property of the notation, and not really related to chess.
+If you prefer not including disambiguations, see simplified_results.json which strips out check, checkmate and disambiguations
+to give an ordered list of moves. According to that method, the rarest move is `fxg1=B`.
+I enjoy the additional complication of the notational rarity, which is what the bulk of this analysis focuses on.
+
 Running the analysis with the included partialResults gives this output:
 
 ```

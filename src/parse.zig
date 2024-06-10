@@ -1,7 +1,7 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-const isDisambiguation = @import("./analyze.zig").isDisambiguation;
+const isDisambiguation = @import("./disambiguation.zig").isDisambiguation;
 
 fn log(
     comptime format: []const u8,
