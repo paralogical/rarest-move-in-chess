@@ -23,19 +23,6 @@ This analysis is done in 2 separate phases (and hence programs)
 - Phase 2 can be run with `zig build run -- analyze partialResults/`.
   - This loads all `.result.json` games in the `partialResults/` folder, and prints analysis out to stdout.
 
-## Possible Moves
-
-Additionally, this repo contains scripts to generate all possible legal moves
-in standard algebraic notation. I may expand on this in the future.
-
-To generate all the moves, use:
-
-```
-bun run ./possibleMoves.ts --plain
-```
-
-Or use `--short` instead of `--plain` to see a summary instead of all moves.
-
 ## About
 
 Note that pgn files used in my analysis are not included in this repo, because I used 1500 Gigabytes of them.
@@ -51,6 +38,10 @@ There's also a couple of scripts here to help compute how many possible moves th
 Why is this written in zig? Just for funzies
 
 ## Results
+
+_**Update**: This repo now contains additional data from 2024. The analysis shown in this README does not include this updated data.
+Use `zig build run -- analyze partialResults/` to see the analysis with updated data.
+This includes people achieving the "rarest move"._
 
 I analyzed all of the [rated game data from lichess](https://database.lichess.org/#standard_games) between July 2014 and December 2023.
 
